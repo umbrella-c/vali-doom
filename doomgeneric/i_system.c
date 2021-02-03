@@ -274,7 +274,7 @@ void I_Quit (void)
 static int ZenityAvailable(void)
 {
 #ifdef MOLLENOS
-    return -1;
+    return 0;
 #else
     return system(ZENITY_BINARY " --help >/dev/null 2>&1") == 0;
 #endif
