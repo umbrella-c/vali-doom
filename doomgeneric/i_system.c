@@ -26,6 +26,8 @@
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#elif defined(MOLLENOS)
+// what nothing?
 #else
 #include <unistd.h>
 #endif
@@ -56,7 +58,7 @@
 #endif
 
 #define DEFAULT_RAM 6 /* MiB */
-#define MIN_RAM     6  /* MiB */
+#define MIN_RAM     6  /* MiB__bool_true_false_are_defined */
 
 
 typedef struct atexit_listentry_s atexit_listentry_t;
@@ -271,7 +273,11 @@ void I_Quit (void)
 
 static int ZenityAvailable(void)
 {
+#ifdef MOLLENOS
+    return -1;
+#else
     return system(ZENITY_BINARY " --help >/dev/null 2>&1") == 0;
+#endif
 }
 
 // Escape special characters in the given string so that they can be
@@ -339,7 +345,11 @@ static int ZenityErrorBox(char *message)
     M_snprintf(errorboxpath, errorboxpath_size, "%s --error --text=%s",
                ZENITY_BINARY, escaped_message);
 
+#ifdef MOLLENOS
+    result = -1;
+#else
     result = system(errorboxpath);
+#endif
 
     free(errorboxpath);
     free(escaped_message);
