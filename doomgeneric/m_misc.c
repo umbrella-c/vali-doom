@@ -31,6 +31,8 @@
 #ifdef _MSC_VER
 #include <direct.h>
 #endif
+#elif defined(MOLLENOS)
+#include <io.h>
 #else
 #include <sys/stat.h>
 #include <sys/types.h>

@@ -70,6 +70,11 @@ typedef bool boolean;
 
 #else
 
+#ifdef __bool_true_false_are_defined
+#undef true
+#undef false
+#endif
+
 typedef enum 
 {
     false	= 0,

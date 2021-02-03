@@ -18,8 +18,11 @@
 #include <ctype.h>
 #include <math.h>
 #include <string.h>
-#include <fcntl.h>
 #include <stdio.h>
+
+#ifndef MOLLENOS
+#include <fcntl.h>
+#endif
 
 #include "config.h"
 #include "deh_str.h"

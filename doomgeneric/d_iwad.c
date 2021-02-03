@@ -615,6 +615,10 @@ static void BuildIWADDirList(void)
 #else
     AddIWADDir (FILES_DIR);
 
+#ifdef MOLLENOS
+    AddIWADDir ("$share/doom");
+#endif
+
     // Don't run this function again.
 
     iwad_dirs_built = true;
