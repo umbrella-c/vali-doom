@@ -4,6 +4,7 @@ project(doomgeneric C CXX)
 # setup include directories
 if (MOLLENOS)
   include_directories($ENV{VALI_APPLICATION_PATH}/include)
+  include_directories($ENV{VALI_DDK_PATH}/include)
 
   link_directories($ENV{VALI_APPLICATION_PATH}/lib)
   link_directories($ENV{VALI_DDK_PATH}/lib)

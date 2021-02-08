@@ -4,6 +4,7 @@ extern "C" {
 	#include "doomgeneric.h"
 }
 #include "doomgeneric_vali_wnd.hpp"
+#include <ddk/utils.h>
 
 #include <stdio.h>
 #include <threads.h>
@@ -15,7 +16,7 @@ static unsigned short s_KeyQueue[KEYQUEUE_SIZE];
 static unsigned int s_KeyQueueWriteIndex = 0;
 static unsigned int s_KeyQueueReadIndex = 0;
 
-static unsigned char convertToDoomKey(unsigned char key)
+static unsigned char convertToDoomKey(unsigned char key, char translated)
 {
 	switch (key)
 	{
@@ -47,16 +48,17 @@ static unsigned char convertToDoomKey(unsigned char key)
 		key = KEY_RSHIFT;
 		break;
 	default:
-		key = tolower(key);
+		key = tolower(translated);
 		break;
 	}
 
 	return key;
 }
 
-void addKeyToQueue(int pressed, unsigned char keyCode)
+void addKeyToQueue(int pressed, unsigned char keyCode, char translated)
 {
-	unsigned char key = convertToDoomKey(keyCode);
+	WARNING("addKeyToQueue(pressed=%i, keyCode=0x%x, translated=%c)", pressed, keyCode, translated);
+	unsigned char key = convertToDoomKey(keyCode, translated);
 
 	unsigned short keyData = (pressed << 8) | key;
 
@@ -78,6 +80,7 @@ extern "C" void DG_Init()
 
 extern "C" void DG_DrawFrame()
 {
+	WARNING("DG_DrawFrame()");
 	Asgaard::APP.PumpMessages();
 
 	auto window = Asgaard::APP.Window();
@@ -115,6 +118,7 @@ extern "C" int DG_GetKey(int* pressed, unsigned char* doomKey)
 		*pressed = keyData >> 8;
 		*doomKey = keyData & 0xFF;
 
+		WARNING("DG_GetKey() returned %i, %c", *pressed, *doomKey);
 		return 1;
 	}
 }

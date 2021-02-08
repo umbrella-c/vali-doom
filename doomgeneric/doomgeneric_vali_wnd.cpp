@@ -21,7 +21,7 @@
 
 #include "doomgeneric_vali_wnd.hpp"
 
-extern void addKeyToQueue(int pressed, unsigned char keyCode);
+extern void addKeyToQueue(int pressed, unsigned char keyCode, char translated);
 
 void DoomWindow::OnCreated(Asgaard::Object* createdObject)
 {
@@ -68,7 +68,7 @@ void DoomWindow::Teardown()
 
 void DoomWindow::OnKeyEvent(const Asgaard::KeyEvent& keyEvent)
 {
-    addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode());
+    addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), keyEvent.KeyAscii());
 }
 
 void DoomWindow::DescriptorEvent(int iod, unsigned int events)
@@ -88,8 +88,11 @@ void DoomWindow::ResetBuffer()
 void DoomWindow::UpdateBuffer(uint32_t* buffer)
 {
     auto size = Dimensions().Width() * Dimensions().Height() * 4;
-    memcpy(m_buffer->Buffer(), buffer, size);
-    RequestRedraw();
+    if (m_buffer && m_buffer->Valid())
+    {
+        memcpy(m_buffer->Buffer(), buffer, size);
+        RequestRedraw();
+    }
 }
 
 void DoomWindow::UpdateTitle(const char* title)
