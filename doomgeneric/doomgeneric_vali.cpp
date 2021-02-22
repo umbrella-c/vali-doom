@@ -4,8 +4,8 @@ extern "C" {
 	#include "doomgeneric.h"
 }
 #include "doomgeneric_vali_wnd.hpp"
-#include <ddk/utils.h>
 
+#include <os/spinlock.h>
 #include <stdio.h>
 #include <threads.h>
 #include <time.h>
@@ -15,6 +15,8 @@ extern "C" {
 static unsigned short s_KeyQueue[KEYQUEUE_SIZE];
 static unsigned int s_KeyQueueWriteIndex = 0;
 static unsigned int s_KeyQueueReadIndex = 0;
+static spinlock_t   g_queueLock = _SPN_INITIALIZER_NP(spinlock_plain);
+static thrd_t       g_appThread;
 
 static unsigned char convertToDoomKey(unsigned char key, char translated)
 {
@@ -38,13 +40,14 @@ static unsigned char convertToDoomKey(unsigned char key, char translated)
 	case VK_DOWN:
 		key = KEY_DOWNARROW;
 		break;
-	case VK_CONTROL:
+	case VK_LCONTROL:
+	case VK_RCONTROL:
 		key = KEY_FIRE;
 		break;
 	case VK_SPACE:
 		key = KEY_USE;
 		break;
-	case VK_SHIFT:
+	case VK_RSHIFT:
 		key = KEY_RSHIFT;
 		break;
 	default:
@@ -57,15 +60,21 @@ static unsigned char convertToDoomKey(unsigned char key, char translated)
 
 void addKeyToQueue(int pressed, unsigned char keyCode, char translated)
 {
-	WARNING("addKeyToQueue(pressed=%i, keyCode=0x%x, translated=%c)", pressed, keyCode, translated);
 	unsigned char key = convertToDoomKey(keyCode, translated);
 
 	unsigned short keyData = (pressed << 8) | key;
 
+	spinlock_acquire(&g_queueLock);
 	s_KeyQueue[s_KeyQueueWriteIndex] = keyData;
 	s_KeyQueueWriteIndex++;
 	s_KeyQueueWriteIndex %= KEYQUEUE_SIZE;
+	spinlock_release(&g_queueLock);
 }
+
+//static int runApplication(void* unused)
+//{
+//	return Asgaard::APP.Execute();
+//}
 
 extern "C" void DG_Init()
 {
@@ -75,12 +84,12 @@ extern "C" void DG_Init()
     
     Asgaard::Rectangle initialSize(0, 0, DOOMGENERIC_RESX, DOOMGENERIC_RESY);
     Asgaard::APP.CreateWindow<DoomWindow>(initialSize);
-    Asgaard::APP.PumpMessages();
+	Asgaard::APP.PumpMessages();
+	//thrd_create(&g_appThread, runApplication, NULL);
 }
 
 extern "C" void DG_DrawFrame()
 {
-	WARNING("DG_DrawFrame()");
 	Asgaard::APP.PumpMessages();
 
 	auto window = Asgaard::APP.Window();
@@ -93,32 +102,35 @@ extern "C" void DG_DrawFrame()
 extern "C" void DG_SleepMs(uint32_t ms)
 {
 	thrd_sleepex(ms);
+	Asgaard::APP.PumpMessages();
 }
 
 extern "C" uint32_t DG_GetTicksMs()
 {
 	struct timespec now;
 	timespec_get(&now, TIME_PROCESS);
-	return (uint32_t)(now.tv_nsec / 1000);
+	return (uint32_t)((now.tv_sec * 1000) + (now.tv_nsec / NSEC_PER_MSEC));
 }
 
 extern "C" int DG_GetKey(int* pressed, unsigned char* doomKey)
 {
 	Asgaard::APP.PumpMessages();
-
+	
+	spinlock_acquire(&g_queueLock);
 	if (s_KeyQueueReadIndex == s_KeyQueueWriteIndex) {
+		spinlock_release(&g_queueLock);
 		//key queue is empty
 		return 0;
 	}
 	else {
 		unsigned short keyData = s_KeyQueue[s_KeyQueueReadIndex];
+		
 		s_KeyQueueReadIndex++;
 		s_KeyQueueReadIndex %= KEYQUEUE_SIZE;
+		spinlock_release(&g_queueLock);
 
 		*pressed = keyData >> 8;
 		*doomKey = keyData & 0xFF;
-
-		WARNING("DG_GetKey() returned %i, %c", *pressed, *doomKey);
 		return 1;
 	}
 }
