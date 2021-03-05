@@ -12,11 +12,12 @@ extern "C" {
 
 #define KEYQUEUE_SIZE 16
 
-static unsigned short s_KeyQueue[KEYQUEUE_SIZE];
-static unsigned int s_KeyQueueWriteIndex = 0;
-static unsigned int s_KeyQueueReadIndex = 0;
-static spinlock_t   g_queueLock = _SPN_INITIALIZER_NP(spinlock_plain);
-static thrd_t       g_appThread;
+static unsigned short              s_KeyQueue[KEYQUEUE_SIZE];
+static unsigned int                s_KeyQueueWriteIndex = 0;
+static unsigned int                s_KeyQueueReadIndex = 0;
+static spinlock_t                  g_queueLock = _SPN_INITIALIZER_NP(spinlock_plain);
+static thrd_t                      g_appThread;
+static std::shared_ptr<DoomWindow> g_window;
 
 static unsigned char convertToDoomKey(unsigned char key, char translated)
 {
@@ -83,7 +84,7 @@ extern "C" void DG_Init()
     Asgaard::APP.Initialize();
     
     Asgaard::Rectangle initialSize(0, 0, DOOMGENERIC_RESX, DOOMGENERIC_RESY);
-    Asgaard::APP.CreateWindow<DoomWindow>(initialSize);
+    g_window = Asgaard::APP.GetScreen()->CreateWindow<DoomWindow>(initialSize);
 	Asgaard::APP.PumpMessages();
 	//thrd_create(&g_appThread, runApplication, NULL);
 }
@@ -91,11 +92,8 @@ extern "C" void DG_Init()
 extern "C" void DG_DrawFrame()
 {
 	Asgaard::APP.PumpMessages();
-
-	auto window = Asgaard::APP.Window();
-	if (window) {
-		auto doomWindow = std::dynamic_pointer_cast<DoomWindow>(window);
-		doomWindow->UpdateBuffer(DG_ScreenBuffer);
+	if (g_window) {
+		g_window->UpdateBuffer(DG_ScreenBuffer);
 	}
 }
 
@@ -137,10 +135,7 @@ extern "C" int DG_GetKey(int* pressed, unsigned char* doomKey)
 
 extern "C" void DG_SetWindowTitle(const char* title)
 {
-	auto window = Asgaard::APP.Window();
-	if (window)
-	{
-		auto doomWindow = std::dynamic_pointer_cast<DoomWindow>(window);
-		doomWindow->UpdateTitle(title);
+	if (g_window) {
+		g_window->UpdateTitle(title);
 	}
 }
