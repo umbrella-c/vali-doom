@@ -71,11 +71,6 @@ void DoomWindow::OnKeyEvent(const Asgaard::KeyEvent& keyEvent)
     addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), keyEvent.KeyAscii());
 }
 
-void DoomWindow::DescriptorEvent(int iod, unsigned int events)
-{
-    
-}
-
 void DoomWindow::ResetBuffer()
 {
     Asgaard::Drawing::Painter paint(m_buffer);
