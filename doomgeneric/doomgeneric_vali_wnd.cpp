@@ -83,7 +83,7 @@ void DoomWindow::ResetBuffer()
 void DoomWindow::UpdateBuffer(uint32_t* buffer)
 {
     auto size = Dimensions().Width() * Dimensions().Height() * 4;
-    if (m_buffer && m_buffer->Valid())
+    if (m_buffer)
     {
         memcpy(m_buffer->Buffer(), buffer, size);
         RequestRedraw();
@@ -92,11 +92,8 @@ void DoomWindow::UpdateBuffer(uint32_t* buffer)
 
 void DoomWindow::UpdateTitle(const char* title)
 {
-    if (m_decoration) {
-        std::string cppTitle(title);
-        m_decoration->SetTitle(cppTitle);
-        m_decoration->RequestRedraw();
-    }
+    std::string cppTitle(title);
+    SetTitle(cppTitle);
 }
 
 void DoomWindow::RequestRedraw()

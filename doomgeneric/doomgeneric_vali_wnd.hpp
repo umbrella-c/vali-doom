@@ -22,7 +22,6 @@
 
 #include <asgaard/application.hpp>
 #include <asgaard/window_base.hpp>
-#include <asgaard/window_decoration.hpp>
 #include <asgaard/memory_pool.hpp>
 #include <asgaard/memory_buffer.hpp>
 #include <asgaard/key_event.hpp>
@@ -31,11 +30,10 @@
 
 class DoomWindow final : public Asgaard::WindowBase {
 public:
-    DoomWindow(uint32_t id, const Asgaard::Rectangle& dimensions)
-        : WindowBase(id, dimensions)
+    DoomWindow(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, const Asgaard::Rectangle& dimensions)
+        : WindowBase(id, screen, dimensions)
         , m_memory(nullptr)
         , m_buffer(nullptr)
-        , m_decoration(nullptr)
         , m_redraw(false)
         , m_redrawReady(false) { }
     
@@ -56,9 +54,8 @@ private:
     void Redraw();
     
 private:
-    std::shared_ptr<Asgaard::MemoryPool>       m_memory;
-    std::shared_ptr<Asgaard::MemoryBuffer>     m_buffer;
-    std::shared_ptr<Asgaard::WindowDecoration> m_decoration;
+    std::shared_ptr<Asgaard::MemoryPool>   m_memory;
+    std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
 
     bool m_redraw;
     std::atomic<bool> m_redrawReady;
