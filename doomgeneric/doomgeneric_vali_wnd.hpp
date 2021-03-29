@@ -43,7 +43,7 @@ public:
     void UpdateTitle(const char* title);
 
 private:
-    void OnCreated(Asgaard::Object* createdObject) override;
+    void OnCreated() override;
     void OnRefreshed(Asgaard::MemoryBuffer* buffer) override;
     void OnKeyEvent(const Asgaard::KeyEvent& keyEvent) override;
     void Teardown() override;
