@@ -23,30 +23,22 @@
 
 extern void addKeyToQueue(int pressed, unsigned char keyCode, char translated);
 
-void DoomWindow::OnCreated(Asgaard::Object* createdObject)
+void DoomWindow::OnCreated()
 {
-    if (createdObject->Id() == Id()) {
-        // Don't hardcode 4 bytes per pixel, this is only because we assume a format of ARGB32
-        auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
-        m_memory = Asgaard::MemoryPool::Create(this, screenSize);
-    }
-    else if (createdObject->Id() == m_memory->Id()) {
-        // Create initial buffer the size of this surface
-        m_buffer = Asgaard::MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
-            Dimensions().Height(), Asgaard::PixelFormat::A8B8G8R8);
-    }
-    else if (createdObject->Id() == m_buffer->Id()) {
-        // Create the window decoration
-        //Asgaard::Rectangle decorationDimensions(0, 0, Dimensions().Width(), 64);
-        //m_decoration = Asgaard::OM.CreateClientObject<Asgaard::WindowDecoration>(m_screen, Id(), decorationDimensions);
+    // Don't hardcode 4 bytes per pixel, this is only because we assume a format of ARGB32
+    auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
+    m_memory = Asgaard::MemoryPool::Create(this, screenSize);
 
-        // Now all resources are created
-        SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
-        SetBuffer(m_buffer);
-        OnRefreshed(m_buffer.get());
-        ResetBuffer();
-        RequestRedraw();
-    }
+    // Create initial buffer the size of this surface
+    m_buffer = Asgaard::MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
+        Dimensions().Height(), Asgaard::PixelFormat::A8B8G8R8);
+    
+    // Now all resources are created
+    SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
+    SetBuffer(m_buffer);
+    OnRefreshed(m_buffer.get());
+    ResetBuffer();
+    RequestRedraw();
 }
 
 void DoomWindow::OnRefreshed(Asgaard::MemoryBuffer* buffer)
