@@ -46,7 +46,6 @@ private:
     void OnCreated() override;
     void OnRefreshed(Asgaard::MemoryBuffer* buffer) override;
     void OnKeyEvent(const Asgaard::KeyEvent& keyEvent) override;
-    void Teardown() override;
 
 private:
     void ResetBuffer();
