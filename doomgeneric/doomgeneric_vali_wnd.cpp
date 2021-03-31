@@ -53,11 +53,6 @@ void DoomWindow::OnRefreshed(Asgaard::MemoryBuffer* buffer)
     }
 }
 
-void DoomWindow::Teardown()
-{
-
-}
-
 void DoomWindow::OnKeyEvent(const Asgaard::KeyEvent& keyEvent)
 {
     addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), keyEvent.KeyAscii());
