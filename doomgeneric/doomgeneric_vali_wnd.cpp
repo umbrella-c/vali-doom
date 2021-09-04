@@ -26,7 +26,7 @@ extern void addKeyToQueue(int pressed, unsigned char keyCode, char translated);
 void DoomWindow::OnCreated()
 {
     // Don't hardcode 4 bytes per pixel, this is only because we assume a format of ARGB32
-    auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
+    auto screenSize = GetScreen()->GetCurrentWidth() * GetScreen()->GetCurrentHeight() * 4;
     m_memory = Asgaard::MemoryPool::Create(this, screenSize);
 
     // Create initial buffer the size of this surface
@@ -41,7 +41,7 @@ void DoomWindow::OnCreated()
     RequestRedraw();
 }
 
-void DoomWindow::OnRefreshed(Asgaard::MemoryBuffer* buffer)
+void DoomWindow::OnRefreshed(const Asgaard::MemoryBuffer* buffer)
 {
     // Request redraw
     if (m_redraw) {
@@ -55,7 +55,7 @@ void DoomWindow::OnRefreshed(Asgaard::MemoryBuffer* buffer)
 
 void DoomWindow::OnKeyEvent(const Asgaard::KeyEvent& keyEvent)
 {
-    addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), keyEvent.KeyAscii());
+    addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), (char)(keyEvent.Key() & 0xFF));
 }
 
 void DoomWindow::ResetBuffer()

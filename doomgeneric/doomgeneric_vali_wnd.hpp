@@ -24,7 +24,7 @@
 #include <asgaard/window_base.hpp>
 #include <asgaard/memory_pool.hpp>
 #include <asgaard/memory_buffer.hpp>
-#include <asgaard/key_event.hpp>
+#include <asgaard/events/key_event.hpp>
 #include <asgaard/drawing/painter.hpp>
 #include <os/keycodes.h>
 
@@ -44,7 +44,7 @@ public:
 
 private:
     void OnCreated() override;
-    void OnRefreshed(Asgaard::MemoryBuffer* buffer) override;
+    void OnRefreshed(const Asgaard::MemoryBuffer* buffer) override;
     void OnKeyEvent(const Asgaard::KeyEvent& keyEvent) override;
 
 private:

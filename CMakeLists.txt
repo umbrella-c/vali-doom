@@ -3,13 +3,8 @@ project(doomgeneric C CXX)
 
 # setup include directories
 if (MOLLENOS)
-  include_directories($ENV{VALI_APPLICATION_PATH}/include)
-  include_directories($ENV{VALI_DDK_PATH}/include)
-
-  link_directories($ENV{VALI_APPLICATION_PATH}/lib)
-  link_directories($ENV{VALI_DDK_PATH}/lib)
+  include($ENV{VALI_DDK_PATH}/lib/cmake/ValiDDKTargets.cmake)
 endif()
-
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
@@ -109,7 +104,7 @@ configure_file(DOOM1.WAD ${CMAKE_BINARY_DIR}/DOOM1.WAD COPYONLY)
 # Configure primary executable target
 add_executable(doom ${DOOM_SRC_LIST})
 if (MOLLENOS)
-  target_link_libraries(doom asgaard static_libgracht libfreetype static_libddk)
+  target_link_libraries(doom asgaard gracht freetype ValiDDK::libddk)
 endif()
 
 # Add a new install target
