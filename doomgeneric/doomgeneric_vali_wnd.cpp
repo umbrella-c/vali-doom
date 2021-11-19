@@ -23,7 +23,8 @@
 
 extern void addKeyToQueue(int pressed, unsigned char keyCode, char translated);
 
-void DoomWindow::OnCreated()
+DoomWindowContent::DoomWindowContent(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, const Asgaard::Rectangle& dimensions)
+    : SubSurface(id, screen, dimensions)
 {
     // Don't hardcode 4 bytes per pixel, this is only because we assume a format of ARGB32
     auto screenSize = GetScreen()->GetCurrentWidth() * GetScreen()->GetCurrentHeight() * 4;
@@ -31,13 +32,68 @@ void DoomWindow::OnCreated()
 
     // Create initial buffer the size of this surface
     m_buffer = Asgaard::MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
-        Dimensions().Height(), Asgaard::PixelFormat::A8B8G8R8);
+        Dimensions().Height(), Asgaard::PixelFormat::X8B8G8R8);
+    SetBuffer(m_buffer);
+}
+
+void DoomWindowContent::OnKeyEvent(const Asgaard::KeyEvent& keyEvent)
+{
+    addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), (char)(keyEvent.Key() & 0xFF));
+}
+
+void DoomWindowContent::UpdateBuffer(uint32_t* buffer)
+{
+    auto size = Dimensions().Width() * Dimensions().Height() * 4;
+    memcpy(m_buffer->Buffer(), buffer, size);
+}
+
+void DoomWindowContent::Redraw()
+{
+    MarkDamaged(Dimensions());
+    ApplyChanges();
+}
+
+DoomWindow::DoomWindow(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, const Asgaard::Rectangle& dimensions)
+    : WindowBase(id, screen, 
+        Asgaard::Rectangle(dimensions.X(), dimensions.Y(), 
+            dimensions.Width(), dimensions.Height() + TOPBAR_HEIGHT_VIOARR))
+    , m_memory(nullptr)
+    , m_buffer(nullptr)
+    , m_content(nullptr)
+    , m_redraw(false)
+    , m_redrawReady(false)
+{
     
-    // Now all resources are created
+}
+
+void DoomWindow::OnCreated()
+{
+    auto fillBuffer = [](const auto& buffer)
+    {
+        Asgaard::Drawing::Painter paint(buffer);
+        paint.SetFillColor(0, 0, 0);
+        paint.RenderFill();
+    };
+
+    // Don't hardcode 4 bytes per pixel, this is only because we assume a format of ARGB32
+    auto screenSize = GetScreen()->GetCurrentWidth() * GetScreen()->GetCurrentHeight() * 4;
+    m_memory = Asgaard::MemoryPool::Create(this, screenSize);
+    
+    // Create initial buffer the size of this surface
+    m_buffer = Asgaard::MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
+        Dimensions().Height(), Asgaard::PixelFormat::X8B8G8R8, Asgaard::MemoryBuffer::Flags::NONE);
+
+    // Create the content surface
+    m_content = Asgaard::SubSurface::Create<DoomWindowContent>(this, 
+        Asgaard::Rectangle(0, TOPBAR_HEIGHT_VIOARR, Dimensions().Width(), Dimensions().Height() - TOPBAR_HEIGHT_VIOARR));
+
+    SetTitle("doom");
+    EnableDecoration(true);
+    fillBuffer(m_buffer);
+
     SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
     SetBuffer(m_buffer);
     OnRefreshed(m_buffer.get());
-    ResetBuffer();
     RequestRedraw();
 }
 
@@ -58,29 +114,17 @@ void DoomWindow::OnKeyEvent(const Asgaard::KeyEvent& keyEvent)
     addKeyToQueue((int)keyEvent.Pressed(), keyEvent.KeyCode(), (char)(keyEvent.Key() & 0xFF));
 }
 
-void DoomWindow::ResetBuffer()
-{
-    Asgaard::Drawing::Painter paint(m_buffer);
-    
-    //paint.SetColor(0xFA, 0xEF, 0xDD);
-    paint.SetFillColor(0xF0, 0xF0, 0xF0);
-    paint.RenderFill();
-}
-
 void DoomWindow::UpdateBuffer(uint32_t* buffer)
 {
-    auto size = Dimensions().Width() * Dimensions().Height() * 4;
-    if (m_buffer)
-    {
-        memcpy(m_buffer->Buffer(), buffer, size);
-        RequestRedraw();
+    if (m_content) {
+        m_content->UpdateBuffer(buffer);
     }
+    RequestRedraw();
 }
 
 void DoomWindow::UpdateTitle(const char* title)
 {
-    std::string cppTitle(title);
-    SetTitle(cppTitle);
+    SetTitle(std::string(title));
 }
 
 void DoomWindow::RequestRedraw()
@@ -96,6 +140,9 @@ void DoomWindow::RequestRedraw()
 
 void DoomWindow::Redraw()
 {
+    if (m_content) {
+        m_content->Redraw();
+    }
     MarkDamaged(Dimensions());
     ApplyChanges();
 }

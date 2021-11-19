@@ -79,11 +79,14 @@ void addKeyToQueue(int pressed, unsigned char keyCode, char translated)
 
 extern "C" void DG_Init()
 {
+    std::string appGuid = "2f8d1d4f-1809-49fa-967e-44d93cc8026d";
+
 	memset(s_KeyQueue, 0, KEYQUEUE_SIZE * sizeof(unsigned short));
 	
+    Asgaard::APP.SetSettingString(Asgaard::Application::Settings::APPLICATION_GUID, appGuid);
     Asgaard::APP.Initialize();
     
-    Asgaard::Rectangle initialSize(0, 0, DOOMGENERIC_RESX, DOOMGENERIC_RESY);
+    Asgaard::Rectangle initialSize(-1, -1, DOOMGENERIC_RESX, DOOMGENERIC_RESY);
     g_window = Asgaard::APP.GetScreen()->CreateWindow<DoomWindow>(initialSize);
 	Asgaard::APP.PumpMessages();
 	//thrd_create(&g_appThread, runApplication, NULL);
