@@ -2,8 +2,12 @@ cmake_minimum_required(VERSION 3.8)
 project(doomgeneric C CXX)
 
 # setup include directories
-if (MOLLENOS)
-  include($ENV{VALI_DDK_PATH}/lib/cmake/ValiDDKTargets.cmake)
+if (VALI)
+  find_path(VALI_DDK_TARGETS
+    NAMES "ValiDDKTargets.cmake"
+    PATH_SUFFIXES "lib" "lib/cmake"
+  )
+  include(${VALI_DDK_TARGETS}/ValiDDKTargets.cmake)
 endif()
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -94,7 +98,7 @@ set(DOOM_SRC_LIST
     doomgeneric/doomgeneric.c
 )
 
-if (MOLLENOS)
+if (VALI)
   list(APPEND DOOM_SRC_LIST doomgeneric/doomgeneric_vali.cpp doomgeneric/doomgeneric_vali_wnd.cpp)
 endif()
 
@@ -103,7 +107,7 @@ configure_file(DOOM1.WAD ${CMAKE_BINARY_DIR}/DOOM1.WAD COPYONLY)
 
 # Configure primary executable target
 add_executable(doom ${DOOM_SRC_LIST})
-if (MOLLENOS)
+if (VALI)
   target_link_libraries(doom asgaard gracht freetype ValiDDK::libddk)
 endif()
 

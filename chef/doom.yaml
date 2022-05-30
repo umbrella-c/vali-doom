@@ -1,0 +1,66 @@
+project: 
+  summary: Doom ported to run on SDL
+  description: |
+    The purpose of doomgeneric is to make porting Doom easier. Of course Doom is already portable
+    but with doomgeneric it is possible with just a few functions. The limitation is there is no sound!
+  author: ID Software
+  email: info@bethsoft.com
+  version: 1.0.0
+  license: GPLv3
+  homepage: idsoftware.com
+
+ingredients:
+- name: vali/clang-cc
+  platform: host
+  arch: host
+  channel: devel
+- name: vali/sdk-c
+  channel: devel
+- name: vali/sdk-cpp
+  channel: devel
+- name: vali/libgracht
+  channel: devel
+- name: vali/libfreetype
+  channel: devel
+- name: vali/mesa
+  channel: devel
+- name: vali/zlib
+  channel: devel
+- name: vali/libpng
+  channel: devel
+- name: vali/libasgaard
+  channel: devel
+- name: vali/libsdl
+  channel: devel
+
+recipes:
+  - name: doom
+    path: /
+    toolchain: vali/clang-cc
+    steps:
+    - name: config
+      type: generate
+      system: cmake
+      arguments:
+        - -G
+        - '"Unix Makefiles"'
+        - -DCMAKE_TOOLCHAIN_FILE=${{ PROJECT_PATH }}/chef/Vali.cmake
+      env:
+        CROSS: ${{ TOOLCHAIN_PREFIX }}/usr/local
+        VALI_ARCH: ${{ CHEF_TARGET_ARCHITECTURE }}
+        VALI_SDK_PATH: ${{ INGREDIENTS_PREFIX }}
+    - name: build
+      type: build
+      depends: [config]
+      system: make
+      env:
+        VALI_SDK_PATH: ${{ INGREDIENTS_PREFIX }}
+
+packs:
+- name: sdldoom
+  type: application
+  commands:
+  - name: doom
+    path: bin/doom.run
+    type: executable
+    description: The doom executable, run this to play
